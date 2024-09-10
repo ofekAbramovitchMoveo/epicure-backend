@@ -112,8 +112,3 @@ export class RestaurantService {
         return pipeline
     }
 }
-
-// async create(createRestaurantDto: CreateRestaurantDto): Promise<Restaurant> {
-//     const restaurant = new this.restaurantModel(createRestaurantDto)
-//     return restaurant.save()
-// }
