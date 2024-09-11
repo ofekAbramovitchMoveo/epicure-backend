@@ -15,6 +15,17 @@ export class UserLocation {
     @Prop()
     lng: number
 }
+@Schema({ _id: false })
+export class OpeningHours {
+    @Prop({ required: true })
+    day: number
+
+    @Prop({ required: true })
+    open: number
+
+    @Prop({ required: true })
+    close: number
+}
 
 @Schema()
 export class Restaurant {
@@ -33,8 +44,8 @@ export class Restaurant {
     @Prop({ default: () => new Date().toISOString() })
     createdAt: string
 
-    @Prop({ default: true })
-    isOpenNow: boolean
+    @Prop({ type: [OpeningHours], required: true })
+    openingHours: OpeningHours[]
 
     @Prop({
         type: {

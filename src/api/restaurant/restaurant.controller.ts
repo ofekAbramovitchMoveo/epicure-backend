@@ -32,7 +32,7 @@ export class RestaurantController {
         try {
             return await this.restaurantService.getSuggestions(query.search)
         } catch (err) {
-            logger.error('Error fetching suggestions', err)
+            logger.error('Error fetching suggestions', err.errmsg)
             throw new HttpException(err.message, err.status || HttpStatus.INTERNAL_SERVER_ERROR)
         }
     }
@@ -46,7 +46,7 @@ export class RestaurantController {
             query.userLocation = query.userLocation && JSON.parse(query.userLocation as string) as UserLocation
             return await this.restaurantService.getRestaurants(query)
         } catch (err) {
-            logger.error('Error fetching restaurants', err)
+            logger.error('Error fetching restaurants', err.errmsg)
             throw new HttpException(err.message, err.status || HttpStatus.INTERNAL_SERVER_ERROR)
         }
     }
@@ -58,7 +58,7 @@ export class RestaurantController {
         try {
             return await this.restaurantService.getRestaurantById(id)
         } catch (err) {
-            logger.error('Error fetching restaurant by id', err)
+            logger.error('Error fetching restaurant by id', err.errmsg)
             throw new HttpException(err.message, err.status || HttpStatus.INTERNAL_SERVER_ERROR)
         }
     }
@@ -70,7 +70,7 @@ export class RestaurantController {
         try {
             return await this.restaurantService.getDishesByRestaurant(restaurantId)
         } catch (err) {
-            logger.error('Error fetching dishes by restaurant', err)
+            logger.error('Error fetching dishes by restaurant', err.errmsg)
             throw new HttpException(err.message, err.status || HttpStatus.INTERNAL_SERVER_ERROR)
         }
     }

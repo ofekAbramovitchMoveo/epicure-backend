@@ -32,6 +32,9 @@ export class RestaurantService {
     private async buildPipeline(query: FilterBy): Promise<PipelineStage[]> {
         const pipeline: PipelineStage[] = []
         const basePath = '/restaurants/'
+        const now = new Date()
+        const currDay = now.getDay()
+        const currTime = now.getHours() * 60 + now.getMinutes()
 
         if (query.userLocation && query.distance) {
             const maxDistance = Number(query.distance[1]) * 1000
@@ -59,16 +62,46 @@ export class RestaurantService {
             switch (query.path) {
                 case `${basePath}new`:
                     pipeline.push(...sortAndLimitStages('createdAt'))
-                    break;
+                    break
                 case `${basePath}most-popular`:
                     pipeline.push(...sortAndLimitStages('rating'))
-                    break;
+                    break
                 case `${basePath}open-now`:
-                    pipeline.push({ $match: { isOpenNow: true } })
-                    break;
+                    pipeline.push(
+                        { $unwind: "$openingHours" },
+                        {
+                            $match: {
+                                "openingHours.day": currDay,
+                                $expr: {
+                                    $or: [
+                                        {
+                                            $and: [
+                                                { $lte: ["$openingHours.open", currTime] },
+                                                { $gt: ["$openingHours.close", currTime] },
+                                            ]
+                                        },
+                                        {
+                                            $and: [
+                                                { $lt: ["$openingHours.close", "$openingHours.open"] },
+                                                {
+                                                    $or: [
+                                                        { $lte: ["$openingHours.open", currTime] },
+                                                        { $gt: ["$openingHours.close", currTime] }
+                                                    ]
+                                                }
+                                            ]
+                                        }
+                                    ]
+                                }
+                            }
+                        },
+                        { $group: { _id: "$_id", restaurant: { $first: "$$ROOT" } } },
+                        { $replaceRoot: { newRoot: "$restaurant" } }
+                    )
+                    break
                 case `${basePath}map`:
                 default:
-                    break;
+                    break
             }
         }
         if (query.ratings?.length) {
