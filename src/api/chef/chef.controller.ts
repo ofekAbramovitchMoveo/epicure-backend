@@ -31,7 +31,7 @@ export class ChefController {
         try {
             return await this.chefService.getChefs()
         } catch (err) {
-            logger.error('Error fetching chefs', err)
+            logger.error('Error fetching chefs', err.errmsg)
             throw new HttpException(err.message, err.status || HttpStatus.INTERNAL_SERVER_ERROR)
         }
     }
@@ -43,7 +43,7 @@ export class ChefController {
         try {
             return await this.chefService.getChefById(id)
         } catch (err) {
-            logger.error('Error fetching chef by id', err)
+            logger.error('Error fetching chef by id', err.errmsg)
             throw new HttpException(err.message, err.status || HttpStatus.INTERNAL_SERVER_ERROR)
         }
     }
