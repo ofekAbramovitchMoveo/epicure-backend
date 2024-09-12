@@ -27,6 +27,8 @@ export class OpeningHours {
     close: number
 }
 
+const OpeningHoursSchema = SchemaFactory.createForClass(OpeningHours)
+
 @Schema()
 export class Restaurant {
     @Prop({ required: true })
@@ -44,7 +46,7 @@ export class Restaurant {
     @Prop({ default: () => new Date().toISOString() })
     createdAt: string
 
-    @Prop({ type: [OpeningHours], required: true })
+    @Prop({ type: [OpeningHoursSchema], required: true })
     openingHours: OpeningHours[]
 
     @Prop({

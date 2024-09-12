@@ -5,6 +5,8 @@ import { MongooseModule } from '@nestjs/mongoose'
 import { RestaurantModule } from './api/restaurant/restaurant.module'
 import { ChefModule } from './api/chef/chef.module'
 import { LoggerService } from './services/logger.service'
+import { UserModule } from './api/user/user.module'
+import { AuthModule } from './api/auth/auth.module';
 
 @Module({
     imports: [
@@ -18,6 +20,8 @@ import { LoggerService } from './services/logger.service'
         }),
         RestaurantModule,
         ChefModule,
+        UserModule,
+        AuthModule,
     ],
     controllers: [],
     providers: [
