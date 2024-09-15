@@ -6,7 +6,8 @@ import { RestaurantModule } from './api/restaurant/restaurant.module'
 import { ChefModule } from './api/chef/chef.module'
 import { LoggerService } from './services/logger.service'
 import { UserModule } from './api/user/user.module'
-import { AuthModule } from './api/auth/auth.module';
+import { AuthModule } from './api/auth/auth.module'
+import { OrderModule } from './api/order/order.module'
 
 @Module({
     imports: [
@@ -22,6 +23,7 @@ import { AuthModule } from './api/auth/auth.module';
         ChefModule,
         UserModule,
         AuthModule,
+        OrderModule,
     ],
     controllers: [],
     providers: [
