@@ -14,6 +14,6 @@ export class OrderService {
         delete paymentDetails.cardNumber
         delete paymentDetails.cvv
 
-        return this.orderModel.create(orderDto)
+        return await this.orderModel.create(orderDto)
     }
 }
