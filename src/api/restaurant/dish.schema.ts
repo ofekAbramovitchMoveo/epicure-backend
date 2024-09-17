@@ -5,6 +5,7 @@ import { HydratedDocument } from "mongoose"
 import { Restaurant } from "./restaurant.schema"
 
 export type DishDocument = HydratedDocument<Dish>
+export type BagDishDocument = HydratedDocument<BagDish>
 
 @Schema()
 export class Dish {
@@ -46,4 +47,23 @@ export class Dish {
     restaurant: Restaurant
 }
 
+@Schema({ _id: false,  })
+export class BagDish extends Dish {
+    @Prop()
+    bagId?: string
+
+    @Prop()
+    restaurantName?: string
+
+    @Prop()
+    changes?: string[]
+
+    @Prop()
+    sideDish?: string
+
+    @Prop()
+    quantity?: number
+}
+
 export const DishSchema = SchemaFactory.createForClass(Dish)
+export const BagDishSchema = SchemaFactory.createForClass(BagDish)

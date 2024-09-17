@@ -34,6 +34,7 @@ export class RestaurantService {
         const basePath = '/restaurants/'
         const now = new Date()
         const currDay = now.getDay()
+        const prevDay = (currDay - 1 + 7) % 7
         const currTime = now.getHours() * 60 + now.getMinutes()
 
         if (query.userLocation && query.distance) {
@@ -71,28 +72,41 @@ export class RestaurantService {
                         { $unwind: "$openingHours" },
                         {
                             $match: {
-                                "openingHours.day": currDay,
-                                $expr: {
-                                    $or: [
-                                        {
-                                            $and: [
-                                                { $lte: ["$openingHours.open", currTime] },
-                                                { $gt: ["$openingHours.close", currTime] },
-                                            ]
-                                        },
-                                        {
-                                            $and: [
-                                                { $lt: ["$openingHours.close", "$openingHours.open"] },
+                                $or: [
+                                    {
+                                        "openingHours.day": currDay,
+                                        $expr: {
+                                            $or: [
                                                 {
-                                                    $or: [
+                                                    $and: [
                                                         { $lte: ["$openingHours.open", currTime] },
-                                                        { $gt: ["$openingHours.close", currTime] }
+                                                        { $gt: ["$openingHours.close", currTime] },
+                                                    ]
+                                                },
+                                                {
+                                                    $and: [
+                                                        { $lt: ["$openingHours.close", "$openingHours.open"] },
+                                                        {
+                                                            $or: [
+                                                                { $lte: ["$openingHours.open", currTime] },
+                                                                { $gt: ["$openingHours.close", currTime] },
+                                                            ]
+                                                        }
                                                     ]
                                                 }
                                             ]
                                         }
-                                    ]
-                                }
+                                    },
+                                    {
+                                        "openingHours.day": prevDay,
+                                        $expr: {
+                                            $and: [
+                                                { $lt: ["$openingHours.close", "$openingHours.open"] },
+                                                { $gt: ["$openingHours.close", currTime] },
+                                            ]
+                                        }
+                                    }
+                                ]
                             }
                         },
                         { $group: { _id: "$_id", restaurant: { $first: "$$ROOT" } } },
