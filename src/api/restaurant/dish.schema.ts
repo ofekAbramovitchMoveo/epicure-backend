@@ -44,13 +44,13 @@ export class Dish {
     }
 
     @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'Restaurant' })
-    restaurant: Restaurant
+    restaurantId: Restaurant
 }
 
-@Schema({ _id: false,  })
+@Schema({ _id: false, })
 export class BagDish extends Dish {
     @Prop()
-    bagId?: string
+    bagDishId?: string
 
     @Prop()
     restaurantName?: string

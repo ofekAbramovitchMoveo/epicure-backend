@@ -19,7 +19,7 @@ export class Chef {
     isChefOfTheWeek: boolean
 
     @Prop({ type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Restaurant' }] })
-    restaurants: Restaurant[]
+    restaurantsIds: Restaurant[]
 }
 
 export const ChefSchema = SchemaFactory.createForClass(Chef)

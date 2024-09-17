@@ -1,9 +1,16 @@
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose"
+import * as mongoose from 'mongoose'
 import { HydratedDocument } from "mongoose"
-import { Dayjs } from 'dayjs'
+import * as dayjs from 'dayjs'
+import * as utc from 'dayjs/plugin/utc'
+import * as timezone from 'dayjs/plugin/timezone'
 
 import { BagDish, BagDishSchema } from "../restaurant/dish.schema"
 import { DayjsSchemaType } from "../../services/dayjs.schema-type"
+import { User } from "../user/user.schema"
+
+dayjs?.extend(utc)
+dayjs?.extend(timezone)
 
 export type OrderDocument = HydratedDocument<Order>
 
@@ -26,7 +33,7 @@ class PaymentDetails {
     nameOnCard: string
 
     @Prop({ required: true, type: DayjsSchemaType })
-    expiryDate: Dayjs | null
+    expiryDate: dayjs.Dayjs | null
 }
 
 @Schema()
@@ -43,8 +50,15 @@ export class Order {
     @Prop({ required: true })
     totalPrice: number
 
-    @Prop({ default: Date.now })
+    @Prop({
+        type: DayjsSchemaType,
+        default: () => dayjs().tz('Asia/Jerusalem').toDate(),
+        transform: (val: Date) => dayjs(val).tz('Asia/Jerusalem').toDate()
+    })
     createdAt?: Date
+
+    @Prop({ required: true, type: mongoose.Schema.Types.ObjectId, ref: 'User' })
+    userId: User
 }
 
 export const OrderSchema = SchemaFactory.createForClass(Order)

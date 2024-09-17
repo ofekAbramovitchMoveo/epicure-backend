@@ -1,7 +1,7 @@
 import { Type } from "class-transformer"
 import { IsArray, IsBoolean, IsCreditCard, IsDate, IsDateString, IsMongoId, IsNotEmpty, IsNumber, IsObject, IsOptional, IsPhoneNumber, IsString, Length, ValidateNested } from "class-validator"
 import { Dayjs } from 'dayjs'
-import { ObjectId } from "mongodb"
+import { Types } from "mongoose"
 
 class DeliveryDetailsDto {
     @IsString()
@@ -74,11 +74,11 @@ class BagDishDto {
 
     @IsNotEmpty()
     @IsMongoId()
-    restaurant: ObjectId
+    restaurantId: Types.ObjectId
 
     @IsOptional()
     @IsString()
-    bagId?: string
+    bagDishId?: string
 
     @IsOptional()
     @IsString()
@@ -119,4 +119,8 @@ export class OrderDto {
     @IsOptional()
     @IsDate()
     createdAt?: Date
+
+    @IsNotEmpty()
+    @IsMongoId()
+    userId: Types.ObjectId
 }

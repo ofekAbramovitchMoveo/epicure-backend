@@ -70,7 +70,7 @@ export class RestaurantController {
         try {
             return await this.restaurantService.getDishesByRestaurant(restaurantId)
         } catch (err) {
-            logger.error('Error fetching dishes by restaurant', err.errmsg)
+            logger.error('Error fetching dishes by restaurant', err)
             throw new HttpException(err.message, err.status || HttpStatus.INTERNAL_SERVER_ERROR)
         }
     }
