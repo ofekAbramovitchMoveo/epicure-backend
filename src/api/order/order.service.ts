@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common'
 import { InjectModel } from '@nestjs/mongoose'
-import { Model } from 'mongoose'
+import { Model, Types } from 'mongoose'
 
 import { OrderDto } from 'src/dto/order.dto'
 import { Order } from './order.schema'
@@ -15,5 +15,9 @@ export class OrderService {
         delete paymentDetails.cvv
 
         return await this.orderModel.create(orderDto)
+    }
+
+    async getOrders(userId: Types.ObjectId) {
+        return await this.orderModel.find({ userId }).sort({ createdAt: -1 })
     }
 }

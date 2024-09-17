@@ -20,8 +20,8 @@ export class RestaurantService {
     }
 
     async getDishesByRestaurant(restaurantId?: string): Promise<Dish[]> {
-        const restaurant = await this.restaurantModel.findById(restaurantId).populate('dishes')
-        return restaurant?.dishes || []
+        const restaurant = await this.restaurantModel.findById(restaurantId).populate('dishesIds')
+        return restaurant?.dishesIds || []
     }
 
     async getSuggestions(searchStr: string): Promise<Restaurant[]> {
@@ -132,14 +132,14 @@ export class RestaurantService {
                 {
                     $lookup: {
                         from: 'dishes',
-                        localField: 'dishes',
+                        localField: 'dishesIds',
                         foreignField: '_id',
-                        as: 'dishes'
+                        as: 'dishesIds'
                     }
                 },
                 {
                     $match: {
-                        dishes: {
+                        dishesIds: {
                             $elemMatch: {
                                 price: { $gte: minPrice, $lte: maxPrice }
                             }

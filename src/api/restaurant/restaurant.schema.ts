@@ -35,7 +35,7 @@ export class Restaurant {
     name: string
 
     @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'Chef', autopopulate: true })
-    chef: Chef
+    chefId: Chef
 
     @Prop({ required: true })
     rating: number
@@ -67,7 +67,7 @@ export class Restaurant {
     }
 
     @Prop({ type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Dish' }], autopopulate: true })
-    dishes: Dish[]
+    dishesIds: Dish[]
 }
 
 export const RestaurantSchema = SchemaFactory.createForClass(Restaurant)

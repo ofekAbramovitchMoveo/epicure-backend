@@ -1,4 +1,5 @@
-import { Body, Controller, HttpException, HttpStatus, Post } from '@nestjs/common'
+import { Body, Controller, Get, HttpException, HttpStatus, Param, Post } from '@nestjs/common'
+import { Types } from 'mongoose'
 
 import { LoggerService } from 'src/services/logger.service'
 import { OrderService } from './order.service'
@@ -32,6 +33,19 @@ export class OrderController {
             return await this.orderService.placeOrder(orderDto)
         } catch (err) {
             logger.error('Error placing order', err)
+            throw new HttpException(err.message, err.status || HttpStatus.INTERNAL_SERVER_ERROR)
+        }
+    }
+
+    @Get('user/:userId')
+    async getOrders(@Param('userId') userId: Types.ObjectId) {
+        const logger = this.initLogger(this.getOrders.name)
+        logger.debug('Fetching orders')
+
+        try {
+            return await this.orderService.getOrders(userId)
+        } catch (err) {
+            logger.error('Error fetching orders', err)
             throw new HttpException(err.message, err.status || HttpStatus.INTERNAL_SERVER_ERROR)
         }
     }
