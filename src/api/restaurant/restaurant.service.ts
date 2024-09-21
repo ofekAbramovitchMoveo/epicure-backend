@@ -11,7 +11,7 @@ export class RestaurantService {
     constructor(@InjectModel(Restaurant.name) private restaurantModel: Model<Restaurant>) { }
 
     async getRestaurants(query: FilterBy): Promise<Restaurant[]> {
-        const pipeline = await this.buildPipeline(query)
+        const pipeline = this.buildPipeline(query)
         return await this.restaurantModel.aggregate(pipeline)
     }
 
@@ -29,7 +29,7 @@ export class RestaurantService {
         return await this.restaurantModel.find({ name: { $regex: searchStr, $options: 'i' } })
     }
 
-    private async buildPipeline(query: FilterBy): Promise<PipelineStage[]> {
+    private buildPipeline(query: FilterBy): PipelineStage[] {
         const pipeline: PipelineStage[] = []
         const basePath = '/restaurants/'
         const now = new Date()
