@@ -1,4 +1,4 @@
-import { Controller, Get, HttpException, HttpStatus, Param } from '@nestjs/common'
+import { Controller, Get, HttpException, HttpStatus, Param, Put, Query } from '@nestjs/common'
 
 import { LoggerService } from 'src/services/logger.service'
 import { Chef } from './chef.schema'
@@ -24,12 +24,12 @@ export class ChefController {
     }
 
     @Get()
-    async getChefs(): Promise<Chef[]> {
-        const logger = this.initLogger(this.getChefs.name)
+    async getChefs(@Query() query: { path: string }): Promise<Chef[]> {
+        const logger = this.initLogger(this.getChefs.name, query)
         logger.debug('Fetching chefs')
 
         try {
-            return await this.chefService.getChefs()
+            return await this.chefService.getChefs(query)
         } catch (err) {
             logger.error('Error fetching chefs', err.errmsg)
             throw new HttpException(err.message, err.status || HttpStatus.INTERNAL_SERVER_ERROR)
@@ -44,6 +44,18 @@ export class ChefController {
             return await this.chefService.getChefById(id)
         } catch (err) {
             logger.error('Error fetching chef by id', err.errmsg)
+            throw new HttpException(err.message, err.status || HttpStatus.INTERNAL_SERVER_ERROR)
+        }
+    }
+
+    @Put(':id/view')
+    async incrementChefView(@Param('id') id: string) {
+        const logger = this.initLogger(this.incrementChefView.name, { id })
+
+        try {
+            return await this.chefService.incrementChefView(id)
+        } catch (err) {
+            logger.error('Error incrementing chef view', err.errmsg)
             throw new HttpException(err.message, err.status || HttpStatus.INTERNAL_SERVER_ERROR)
         }
     }
