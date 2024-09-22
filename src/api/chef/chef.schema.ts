@@ -20,6 +20,12 @@ export class Chef {
 
     @Prop({ type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Restaurant' }] })
     restaurantsIds: Restaurant[]
+
+    @Prop()
+    createdAt: string
+
+    @Prop()
+    views: number
 }
 
 export const ChefSchema = SchemaFactory.createForClass(Chef)
