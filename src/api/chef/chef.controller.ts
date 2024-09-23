@@ -24,7 +24,7 @@ export class ChefController {
     }
 
     @Get()
-    async getChefs(@Query() query: { path: string }): Promise<Chef[]> {
+    async getChefs(@Query() query: { sortBy: string | null, limit: string | null }): Promise<Chef[]> {
         const logger = this.initLogger(this.getChefs.name, query)
         logger.debug('Fetching chefs')
 

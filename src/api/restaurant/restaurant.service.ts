@@ -31,7 +31,6 @@ export class RestaurantService {
 
     private buildPipeline(query: FilterBy): PipelineStage[] {
         const pipeline: PipelineStage[] = []
-        const basePath = '/restaurants/'
         const now = new Date()
         const currDay = now.getDay()
         const prevDay = (currDay - 1 + 7) % 7
@@ -54,69 +53,59 @@ export class RestaurantService {
                 })
             }
         }
-        if (query.path) {
+        if (query.sortBy) {
             const sortAndLimitStages = (sortBy: string) => [
                 { $sort: { [sortBy]: -1 as const } },
                 { $limit: 3 }
             ]
 
-            switch (query.path) {
-                case `${basePath}new`:
-                    pipeline.push(...sortAndLimitStages('createdAt'))
-                    break
-                case `${basePath}most-popular`:
-                    pipeline.push(...sortAndLimitStages('rating'))
-                    break
-                case `${basePath}open-now`:
-                    pipeline.push(
-                        { $unwind: "$openingHours" },
-                        {
-                            $match: {
-                                $or: [
-                                    {
-                                        "openingHours.day": currDay,
-                                        $expr: {
-                                            $or: [
+            pipeline.push(...sortAndLimitStages(query.sortBy))
+        }
+        if (query.path === '/restaurants/open-now') {
+            pipeline.push(
+                { $unwind: "$openingHours" },
+                {
+                    $match: {
+                        $or: [
+                            {
+                                "openingHours.day": currDay,
+                                $expr: {
+                                    $or: [
+                                        {
+                                            $and: [
+                                                { $lte: ["$openingHours.open", currTime] },
+                                                { $gt: ["$openingHours.close", currTime] },
+                                            ]
+                                        },
+                                        {
+                                            $and: [
+                                                { $lt: ["$openingHours.close", "$openingHours.open"] },
                                                 {
-                                                    $and: [
+                                                    $or: [
                                                         { $lte: ["$openingHours.open", currTime] },
                                                         { $gt: ["$openingHours.close", currTime] },
-                                                    ]
-                                                },
-                                                {
-                                                    $and: [
-                                                        { $lt: ["$openingHours.close", "$openingHours.open"] },
-                                                        {
-                                                            $or: [
-                                                                { $lte: ["$openingHours.open", currTime] },
-                                                                { $gt: ["$openingHours.close", currTime] },
-                                                            ]
-                                                        }
                                                     ]
                                                 }
                                             ]
                                         }
-                                    },
-                                    {
-                                        "openingHours.day": prevDay,
-                                        $expr: {
-                                            $and: [
-                                                { $lt: ["$openingHours.close", "$openingHours.open"] },
-                                                { $gt: ["$openingHours.close", currTime] },
-                                            ]
-                                        }
-                                    }
-                                ]
+                                    ]
+                                }
+                            },
+                            {
+                                "openingHours.day": prevDay,
+                                $expr: {
+                                    $and: [
+                                        { $lt: ["$openingHours.close", "$openingHours.open"] },
+                                        { $gt: ["$openingHours.close", currTime] },
+                                    ]
+                                }
                             }
-                        },
-                        { $group: { _id: "$_id", restaurant: { $first: "$$ROOT" } } },
-                        { $replaceRoot: { newRoot: "$restaurant" } }
-                    )
-                    break
-                case `${basePath}map`:
-                default:
-                    break
-            }
+                        ]
+                    }
+                },
+                { $group: { _id: "$_id", restaurant: { $first: "$$ROOT" } } },
+                { $replaceRoot: { newRoot: "$restaurant" } }
+            )
         }
         if (query.ratings?.length) {
             const ratings = Array.isArray(query.ratings) ? query.ratings : [query.ratings]

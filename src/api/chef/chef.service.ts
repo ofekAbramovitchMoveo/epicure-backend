@@ -8,7 +8,7 @@ import { Chef } from './chef.schema'
 export class ChefService {
     constructor(@InjectModel(Chef.name) private chefModel: Model<Chef>) { }
 
-    async getChefs(query: { path: string }): Promise<Chef[]> {
+    async getChefs(query: { sortBy: string | null, limit: string | null }): Promise<Chef[]> {
         const pipeline = this.buildPipeline(query)
         return await this.chefModel.aggregate(pipeline)
     }
@@ -30,26 +30,16 @@ export class ChefService {
         )
     }
 
-    private buildPipeline(query: { path: string }): PipelineStage[] {
+    private buildPipeline(query: { sortBy: string | null, limit: string | null }): PipelineStage[] {
         const pipeline = []
-        const basePath = '/chefs/'
 
-        if (query.path) {
+        if (query.sortBy && query.limit) {
             const sortAndLimitStages = (sortBy: string, limit: number) => [
                 { $sort: { [sortBy]: -1 as const } },
                 { $limit: limit }
             ]
 
-            switch (query.path) {
-                case `${basePath}new`:
-                    pipeline.push(...sortAndLimitStages('createdAt', 6))
-                    break
-                case `${basePath}most-viewed`:
-                    pipeline.push(...sortAndLimitStages('views', 3))
-                    break
-                default:
-                    break
-            }
+            pipeline.push(...sortAndLimitStages(query.sortBy, parseInt(query.limit)))
         }
 
         if (!pipeline.some(stage => '$match' in stage)) {
