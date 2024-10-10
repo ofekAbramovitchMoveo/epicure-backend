@@ -2,6 +2,7 @@ import { ValidationPipe } from '@nestjs/common'
 import { CorsOptions } from '@nestjs/common/interfaces/external/cors-options.interface'
 import { NestFactory } from '@nestjs/core'
 import { getModelToken } from '@nestjs/mongoose'
+import * as compression from 'compression'
 
 import { LoggerService } from './services/logger.service'
 import { AppModule } from './app.module'
@@ -13,6 +14,7 @@ async function bootstrap() {
     })
     app.setGlobalPrefix('api')
     app.useGlobalPipes(new ValidationPipe())
+    app.use(compression())
     const restaurantModel = app.get(getModelToken(Restaurant.name))
     await restaurantModel.collection.createIndex({ location: '2dsphere' })
 
