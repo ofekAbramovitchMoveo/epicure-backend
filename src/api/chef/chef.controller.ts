@@ -24,12 +24,18 @@ export class ChefController {
     }
 
     @Get()
-    async getChefs(@Query() query: { sortBy: string | null, limit: string | null }): Promise<Chef[]> {
+    async getChefs(@Query() query: { sortBy: string | null, limit: string | null, page?: string }): Promise<{ chefs: Chef[], totalCount: number }> {
         const logger = this.initLogger(this.getChefs.name, query)
         logger.debug('Fetching chefs')
 
         try {
-            return await this.chefService.getChefs(query)
+            let pageNum: number | undefined
+            if (query.page) {
+                const parsedPage = parseInt(query.page, 10)
+                pageNum = !isNaN(parsedPage) && parsedPage > 0 ? parsedPage : undefined
+            }
+
+            return await this.chefService.getChefs(query, pageNum)
         } catch (err) {
             logger.error('Error fetching chefs', err.errmsg)
             throw new HttpException(err.message, err.status || HttpStatus.INTERNAL_SERVER_ERROR)

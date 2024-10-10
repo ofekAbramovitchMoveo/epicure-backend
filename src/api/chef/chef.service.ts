@@ -8,9 +8,18 @@ import { Chef } from './chef.schema'
 export class ChefService {
     constructor(@InjectModel(Chef.name) private chefModel: Model<Chef>) { }
 
-    async getChefs(query: { sortBy: string | null, limit: string | null }): Promise<Chef[]> {
-        const pipeline = this.buildPipeline(query)
-        return await this.chefModel.aggregate(pipeline)
+    async getChefs(query: { sortBy: string | null, limit: string | null }, page?: number): Promise<{ chefs: Chef[], totalCount: number }> {
+        const limit = 6
+        const { pipeline, countPipeline } = this.buildPipeline(query, page, limit)
+
+        const [chefs, total] = await Promise.all([
+            this.chefModel.aggregate(pipeline),
+            this.chefModel.aggregate(countPipeline)
+        ])
+
+        const totalCount = total[0]?.total || 0
+
+        return { chefs, totalCount }
     }
 
     async getChefById(id: string): Promise<Chef> {
@@ -30,7 +39,7 @@ export class ChefService {
         )
     }
 
-    private buildPipeline(query: { sortBy: string | null, limit: string | null }): PipelineStage[] {
+    private buildPipeline(query: { sortBy: string | null, limit: string | null }, page?: number, limit: number = 6): { pipeline: PipelineStage[], countPipeline: PipelineStage[] } {
         const pipeline = []
 
         if (query.sortBy && query.limit) {
@@ -49,6 +58,13 @@ export class ChefService {
             pipeline.push({ $sort: { _id: 1 } })
         }
 
-        return pipeline
+        const countPipeline = [...pipeline, { $count: 'total' }]
+
+        if (page) {
+            const skip = (page - 1) * limit
+            pipeline.push({ $skip: skip }, { $limit: limit })
+        }
+
+        return { pipeline, countPipeline }
     }
 }

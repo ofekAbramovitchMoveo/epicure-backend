@@ -10,9 +10,18 @@ import { Restaurant } from "./restaurant.schema"
 export class RestaurantService {
     constructor(@InjectModel(Restaurant.name) private restaurantModel: Model<Restaurant>) { }
 
-    async getRestaurants(query: FilterBy): Promise<Restaurant[]> {
-        const pipeline = this.buildPipeline(query)
-        return await this.restaurantModel.aggregate(pipeline)
+    async getRestaurants(query: FilterBy, page?: number): Promise<{ restaurants: Restaurant[], totalCount: number }> {
+        const limit = 6
+        const { pipeline, countPipeline } = this.buildPipeline(query, page, limit)
+
+        const [restaurants, total] = await Promise.all([
+            this.restaurantModel.aggregate(pipeline),
+            this.restaurantModel.aggregate(countPipeline)
+        ])
+
+        const totalCount = total[0]?.total || 0
+
+        return { restaurants, totalCount }
     }
 
     async getRestaurantById(id: string): Promise<Restaurant> {
@@ -29,8 +38,9 @@ export class RestaurantService {
         return await this.restaurantModel.find({ name: { $regex: searchStr, $options: 'i' } })
     }
 
-    private buildPipeline(query: FilterBy): PipelineStage[] {
+    private buildPipeline(query: FilterBy, page?: number, limit: number = 6): { pipeline: PipelineStage[], countPipeline: PipelineStage[] } {
         const pipeline: PipelineStage[] = []
+        const isOpenNowPage = query.isOpenNowPage === 'true'
         const now = new Date()
         const currDay = now.getDay()
         const currTime = now.getHours() * 60 + now.getMinutes()
@@ -61,7 +71,7 @@ export class RestaurantService {
 
             pipeline.push(...sortAndLimitStages(query.sortBy))
         }
-        if (query.path === '/restaurants/open-now') {
+        if (isOpenNowPage) {
             pipeline.push(
                 {
                     $addFields: {
@@ -173,6 +183,13 @@ export class RestaurantService {
             pipeline.push({ $sort: { _id: 1 } })
         }
 
-        return pipeline
+        const countPipeline = [...pipeline, { $count: 'total' }]
+
+        if (page) {
+            const skip = (page - 1) * limit
+            pipeline.push({ $skip: skip }, { $limit: limit })
+        }
+
+        return { pipeline, countPipeline }
     }
 }

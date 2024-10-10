@@ -38,13 +38,20 @@ export class RestaurantController {
     }
 
     @Get()
-    async getRestaurants(@Query() query: FilterBy): Promise<Restaurant[]> {
+    async getRestaurants(@Query() query: FilterBy, @Query('page') page?: string): Promise<{ restaurants: Restaurant[], totalCount: number }> {
         const logger = this.initLogger(this.getRestaurants.name, query)
         logger.debug('Fetching restarurants')
 
         try {
             query.userLocation = query.userLocation && JSON.parse(query.userLocation as string) as UserLocation
-            return await this.restaurantService.getRestaurants(query)
+
+            let pageNum: number | undefined
+            if (page) {
+                const parsedPage = parseInt(page, 10)
+                pageNum = !isNaN(parsedPage) && parsedPage > 0 ? parsedPage : undefined
+            }
+
+            return await this.restaurantService.getRestaurants(query, pageNum)
         } catch (err) {
             logger.error('Error fetching restaurants', err.errmsg)
             throw new HttpException(err.message, err.status || HttpStatus.INTERNAL_SERVER_ERROR)
